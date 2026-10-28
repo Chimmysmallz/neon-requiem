@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#05040c">
+<title>Neon Requiem · Phone check</title>
+<style>
+  :root { --bg: #05040c; --panel: #120c26; --text: #ecebf5; --muted: #a9a6c4; --pink: #ff2e8a; --teal: #59ffff; --gold: #ffb233; --ok: #5fffb0; --bad: #ff5c7a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+  main { max-inline-size: 760px; margin-inline: auto; padding: 28px 18px 60px; }
+  h1 { margin: 0; font-size: 28px; text-shadow: 0 0 16px rgba(255, 46, 138, 0.6); }
+  .sub { color: var(--muted); margin: 4px 0 22px; }
+  .row { display: flex; gap: 14px; align-items: flex-start; background: var(--panel); border: 1px solid rgba(89, 255, 255, 0.25); border-radius: 14px; padding: 14px 16px; margin-block-end: 10px; }
+  .badge { flex: 0 0 auto; min-inline-size: 64px; text-align: center; font-weight: 800; font-size: 13px; padding: 4px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); color: var(--muted); }
+  .badge.ok { background: rgba(95, 255, 176, 0.15); color: var(--ok); }
+  .badge.bad { background: rgba(255, 92, 122, 0.15); color: var(--bad); }
+  .badge.info { background: rgba(255, 178, 51, 0.15); color: var(--gold); }
+  .what { font-weight: 700; }
+  .detail { color: var(--muted); font-size: 14px; }
+  button, .play { font: inherit; font-weight: 800; color: #fff; border: 2px solid var(--pink); background: #2a1440; border-radius: 999px; padding: 10px 18px; cursor: pointer; }
+  .play { display: block; text-align: center; text-decoration: none; background: linear-gradient(#ff3f97, #b0186a); border-color: #ffd2ea; font-size: 20px; padding: 14px; margin-block-start: 22px; }
+  #touchpad { margin-block-start: 10px; block-size: 140px; border: 2px dashed var(--teal); border-radius: 14px; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--teal); touch-action: none; user-select: none; -webkit-user-select: none; }
+  .note { color: var(--muted); font-size: 14px; margin-block-start: 18px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Neon Requiem · Phone check</h1>
+  <p class="sub">Checks that this phone can run the game. Results appear below. Nothing is sent anywhere.</p>
+
+  <div id="list"></div>
+
+  <div class="row">
+    <span class="badge" id="b-touch2">TRY</span>
+    <div>
+      <div class="what">Two-finger touch</div>
+      <div class="detail">You slide with one thumb while tapping buttons with the other. Put two fingers in the box at the same time.</div>
+      <div id="touchpad">Touch here with two fingers</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <span class="badge" id="b-sound">TRY</span>
+    <div>
+      <div class="what">Sound</div>
+      <div class="detail">Tap the button. You should hear a short rising tone. On iPhone, sound in web pages is muted when the silent switch is on.</div>
+      <p><button id="beep" type="button">Play test sound</button></p>
+    </div>
+  </div>
+
+  <div class="row">
+    <span class="badge" id="b-vib">TRY</span>
+    <div>
+      <div class="what">Vibration</div>
+      <div class="detail">Android phones should buzz. iPhones do not allow web pages to vibrate, so "not supported" is normal there.</div>
+      <p><button id="buzz" type="button">Test vibration</button></p>
+    </div>
+  </div>
+
+  <a class="play" href="index.html">Start Neon Requiem ▸</a>
+  <p class="note">Tip for iPhone: in Safari tap Share, then <strong>Add to Home Screen</strong>. The game then opens full screen like an app.</p>
+</main>
+<script>
+(function () {
+  'use strict';
+  var list = document.getElementById('list');
+  function row(id, what, status, cls, detail) {
+    var r = document.getElementById('r-' + id);
+    if (!r) {
+      r = document.createElement('div'); r.className = 'row'; r.id = 'r-' + id;
+      var b = document.createElement('span'); b.className = 'badge';
+      var box = document.createElement('div');
+      var w = document.createElement('div'); w.className = 'what';
+      var d = document.createElement('div'); d.className = 'detail';
+      box.appendChild(w); box.appendChild(d); r.appendChild(b); r.appendChild(box); list.appendChild(r);
+    }
+    r.children[0].textContent = status; r.children[0].className = 'badge ' + cls;
+    r.children[1].children[0].textContent = what;
+    r.children[1].children[1].textContent = detail;
+  }
+  function setBadge(id, status, cls) { var b = document.getElementById(id); b.textContent = status; b.className = 'badge ' + cls; }
+
+  // secure connection
+  var https = location.protocol === 'https:';
+  row('https', 'Secure connection (HTTPS)', https ? 'PASS' : (location.protocol === 'file:' ? 'LOCAL' : 'FAIL'), https ? 'ok' : (location.protocol === 'file:' ? 'info' : 'bad'),
+    https ? 'The page is served securely.' : (location.protocol === 'file:' ? 'Opened as a file on this device. Fine for testing; on GitHub Pages this should say PASS.' : 'Turn on "Enforce HTTPS" in the repository Settings > Pages.'));
+
+  // screen + orientation
+  function screenCheck() {
+    var w = window.innerWidth, h = window.innerHeight, land = w > h;
+    row('screen', 'Screen and orientation', land ? 'PASS' : 'ROTATE', land ? 'ok' : 'info',
+      w + ' × ' + h + ' at ' + (window.devicePixelRatio || 1) + 'x. ' + (land ? 'Landscape, good.' : 'The game plays sideways. Turn your phone to landscape.'));
+  }
+  screenCheck(); window.addEventListener('resize', screenCheck);
+
+  // touch
+  var tp = navigator.maxTouchPoints || 0, touch = ('ontouchstart' in window) || tp > 0;
+  row('touch', 'Touch screen', touch ? 'PASS' : 'INFO', touch ? 'ok' : 'info',
+    touch ? 'Touch screen found (' + (tp || 'yes') + ' touch points).' : 'No touch screen found. On a computer the on-screen buttons still work with a mouse.');
+
+  // canvas
+  var cv = document.createElement('canvas'), ok2d = !!(cv.getContext && cv.getContext('2d'));
+  row('canvas', 'Graphics (canvas)', ok2d ? 'PASS' : 'FAIL', ok2d ? 'ok' : 'bad', ok2d ? 'The browser can draw the game.' : 'This browser cannot draw the game. Update Safari or Chrome.');
+
+  // audio support
+  var AC = window.AudioContext || window.webkitAudioContext;
+  row('audio', 'Sound engine', AC ? 'PASS' : 'FAIL', AC ? 'ok' : 'bad', AC ? 'Web audio is available. Use the sound test below to hear it.' : 'This browser has no web audio, so the game will be silent.');
+
+  // storage
+  var store = false;
+  try { localStorage.setItem('nr_check', '1'); store = localStorage.getItem('nr_check') === '1'; localStorage.removeItem('nr_check'); } catch (e) { store = false; }
+  row('store', 'Saving progress', store ? 'PASS' : 'WARN', store ? 'ok' : 'bad',
+    store ? 'Progress can be saved on this device for the Continue button.' : 'Saving is blocked (often private browsing). The game plays, but Continue will not work.');
+
+  // pointer events
+  var pe = !!window.PointerEvent;
+  row('pointer', 'Touch controls support', pe ? 'PASS' : 'FAIL', pe ? 'ok' : 'bad', pe ? 'Slide-to-move and the buttons will respond.' : 'This browser is too old for the controls. Update it.');
+
+  // fullscreen
+  var fs = !!document.fullscreenEnabled;
+  row('fs', 'Full-screen button', fs ? 'PASS' : 'INFO', fs ? 'ok' : 'info', fs ? 'The FULL SCREEN button on the title screen will work.' : 'Not available here (normal on iPhone). Use Add to Home Screen instead.');
+
+  // two-finger test
+  var pad = document.getElementById('touchpad'), best = 0;
+  function onTouch(e) {
+    var n = e.touches ? e.touches.length : 1; if (n > best) best = n;
+    pad.textContent = n + ' finger' + (n === 1 ? '' : 's') + ' detected';
+    if (best >= 2) setBadge('b-touch2', 'PASS', 'ok');
+    e.preventDefault();
+  }
+  pad.addEventListener('touchstart', onTouch, { passive: false });
+  pad.addEventListener('touchmove', onTouch, { passive: false });
+
+  // sound test
+  var ctx = null;
+  document.getElementById('beep').addEventListener('click', function () {
+    if (!AC) { setBadge('b-sound', 'FAIL', 'bad'); return; }
+    try {
+      ctx = ctx || new AC();
+      if (ctx.state === 'suspended') ctx.resume();
+      var t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.setValueAtTime(440, t); o.frequency.exponentialRampToValueAtTime(880, t + 0.35);
+      g.gain.setValueAtTime(0.2, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + 0.5);
+      setBadge('b-sound', 'HEARD?', 'info');
+    } catch (e) { setBadge('b-sound', 'FAIL', 'bad'); }
+  });
+
+  // vibration test
+  document.getElementById('buzz').addEventListener('click', function () {
+    var ok = false;
+    try { ok = !!(navigator.vibrate && navigator.vibrate(200)); } catch (e) { ok = false; }
+    setBadge('b-vib', ok ? 'SENT' : 'NOT SUPPORTED', ok ? 'ok' : 'info');
+  });
+})();
+</script>
+</body>
+</html>
